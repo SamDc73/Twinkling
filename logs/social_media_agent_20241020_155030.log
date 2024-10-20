@@ -1,0 +1,13 @@
+2024-10-20 15:50:30,793 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:50:30,794 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:50:30,796 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:50:30,799 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:50:30,799 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:50:30,800 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:50:31,302 - social_media_agent - ERROR - Failed to retrieve user info
+2024-10-20 15:50:32,653 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:50:32,653 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:50:32,662 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:50:33,444 - social_media_agent - INFO - Generated tweet content: "The era of easy money has led to a widening wealth gap, with the wealthy benefiting disproportionately from quantitative easing. As the Federal Reserve continues to navigate the economy, it's essential to consider the long-term consequences of its policies on the average American. #FederalReserve #EasyMoney #WealthGap"
+2024-10-20 15:50:35,064 - social_media_agent - INFO - User choice: yes
+2024-10-20 15:50:35,143 - social_media_agent - ERROR - Failed to post tweet.

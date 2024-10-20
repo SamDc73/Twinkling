@@ -1,0 +1,7 @@
+2024-10-20 16:11:42,242 - social_media_agent - INFO - Starting the application...
+2024-10-20 16:11:42,243 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 16:11:42,245 - social_media_agent - INFO - Note manager initialized
+2024-10-20 16:11:42,249 - social_media_agent - INFO - Model manager initialized
+2024-10-20 16:11:42,249 - social_media_agent - INFO - Content generator initialized
+2024-10-20 16:11:42,249 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 16:11:42,462 - social_media_agent - ERROR - Failed to retrieve user info

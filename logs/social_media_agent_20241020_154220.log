@@ -1,0 +1,14 @@
+2024-10-20 15:42:20,227 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:42:20,229 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:42:20,231 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:42:20,235 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:42:20,235 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:42:20,235 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:42:20,483 - social_media_agent - INFO - Successfully retrieved info for user: @SamDc73
+2024-10-20 15:42:22,646 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:42:22,646 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:42:22,652 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:42:23,354 - social_media_agent - INFO - Generated tweet content: "The Madoff Affair: A shocking tale of greed, deception, and the largest Ponzi scheme in history. How one man's 'easy money machine' brought down thousands of investors and left a trail of destruction. #Madoff #Madoff #PonziScheme"
+2024-10-20 15:42:27,933 - social_media_agent - WARNING - Invalid input. Please enter Yes, No, or Retry.
+2024-10-20 15:42:30,639 - social_media_agent - INFO - User choice: yes
+2024-10-20 15:42:30,940 - social_media_agent - ERROR - Failed to post tweet.

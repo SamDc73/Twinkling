@@ -1,0 +1,6 @@
+social_media_agent
+.mypy_cache
+.env 
+__pycache__
+output.txt
+

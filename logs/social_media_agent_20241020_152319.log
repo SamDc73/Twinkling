@@ -1,0 +1,134 @@
+2024-10-20 15:23:19,167 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:23:19,168 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:23:19,170 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:23:19,172 - social_media_agent - INFO - Environment loaded from /home/samdc/Dev/social_media_agent/src/../.env
+2024-10-20 15:23:19,172 - social_media_agent - INFO - ModelManager initialized with config: sambanova/Meta-Llama-3.1-8B-Instruct
+2024-10-20 15:23:19,173 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:23:19,173 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:23:19,173 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:23:20,485 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:23:20,485 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:23:20,491 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:23:20,491 - social_media_agent - INFO - Generating content with prompt: Based on the following note, generate a tweet in m...
+2024-10-20 15:23:20,491 - social_media_agent - DEBUG - Full prompt: Based on the following note, generate a tweet in my style:
+
+Note: <p>title:: Creating High Performance Culture | Patty McCord 
+full-title:: Creating High Performance Culture | Patty McCord | Talks at Google
+People:: [[Patty McCord]]
+Channel::  [[Talks at Google]]
+Youtube-id:: thzDy5A-KfE
+Year::  2018</p>
+<ul>
+<li>
+<h3>Introduction</h3>
+<ul>
+<li>Patty McCord is an expert on company culture</li>
+<li>She was an early employee at Netflix and co-author of the famous Netflix culture deck</li>
+<li>Her book "Powerful: Building a Culture of Freedom and Responsibility" aims to convey the message of the Netflix culture deck</li>
+</ul>
+</li>
+<li>
+<h3>Netflix Culture Deck</h3>
+<ul>
+<li>Patty didn't write or co-author the Netflix culture deck with Reed Hastings (Netflix CEO)</li>
+<li>At her previous company Pure Software, her job was to merge employee handbooks after acquisitions with the fewest policies</li>
+<li>The goal at Netflix was to create a company culture they wanted to work in, avoiding brilliant but difficult people</li>
+<li>They aimed to give employees freedom and the ability to say no</li>
+<li>The culture deck outlined the desired culture, and Patty's job was to implement it in reality</li>
+</ul>
+</li>
+<li>
+<h3>Scott Bowman Story</h3>
+<ul>
+<li>Patty shared a story about being on stage with Scotty Bowman, the winningest hockey coach in NHL history</li>
+<li>The event was in Montreal at the Bell Centre, home of the Stanley Cup</li>
+<li>Despite expecting a small audience, she found herself on stage with thousands of people, with Scotty being treated like a legend</li>
+<li>Scotty explained his process of giving feedback to players every 10 games, involving self-assessments, stats, and plans for the next stretch</li>
+<li>This resonated with Patty, who dislikes the annual performance review and believes in continuous feedback for high performance</li>
+</ul>
+</li>
+<li>
+<h3>How to Navigate Your Career</h3>
+<ul>
+<li>Patty emphasizes the importance of finding a role where your talents match the company's needs</li>
+<li>If you dread going to work or feel undervalued, something is wrong</li>
+<li>It's your responsibility to navigate your career, not wait for others to notice your unhappiness or fulfillment</li>
+<li>Learn from the work you hate, and be cognizant of what you're learning, liking, and disliking</li>
+<li>Your talent is important, so ensure you're in a place that recognizes it</li>
+</ul>
+</li>
+<li>
+<h3>Transformation</h3>
+<ul>
+<li>Patty spends time with big companies trying to transform into agile tech companies</li>
+<li>She believes employees can create the desired workplace by being vocal and having honest conversations</li>
+<li>She shares a story about a basketball coach's candid perspective on cutting players, contrasting it with the lack of honesty in corporate settings</li>
+<li>Real transformation comes from speaking truthfully about management and employees voicing their needs and the company's future</li>
+<li>Interviewing elsewhere helps assess your worth and find new opportunities</li>
+</ul>
+</li>
+<li>
+<h3>Low Performers</h3>
+<ul>
+<li>Patty discusses how Netflix handled low performers, using the example of transitioning from DVDs to streaming</li>
+<li>They realized they lacked the IT expertise to handle the massive bandwidth requirements for streaming</li>
+<li>As a result, they turned over 97% of the IT team that year, with many moving to another company better suited to their skills</li>
+<li>Hiring the wrong person is the company's fault, not the employee's</li>
+<li>If someone is close but not quite right, be honest about it during the hiring process</li>
+</ul>
+</li>
+<li>
+<h3>Severance Packages</h3>
+<ul>
+<li>Patty aimed to avoid putting employees on performance improvement plans when their roles were no longer needed</li>
+<li>Instead, she offered generous severance packages to part ways amicably</li>
+<li>This required having a top-notch recruiting team to hire for evolving needs</li>
+<li>She advocated paying competitive market rates based on real data from recruiters and employee interviews elsewhere</li>
+</ul>
+</li>
+<li>
+<h3>Pay for Performance</h3>
+<ul>
+<li>Patty doesn't have an issue with annual compensation reviews but dislikes combining them with performance reviews and feedback</li>
+<li>She believes in providing continuous feedback for performance improvement, not just annually</li>
+<li>Compensation should be transparent, market-based, and reflect the importance of each role to the company</li>
+</ul>
+</li>
+<li>
+<h3>Creating a Culture of Excellence</h3>
+<ul>
+<li>Achieving excellence without toxicity or fear involves:<ul>
+<li>Modeling the right behavior and calling out unacceptable conduct</li>
+<li>Encouraging debate focused on the customer/product, not personal attacks</li>
+<li>Viewing the team as a collective solving problems, not individuals competing</li>
+</ul>
+</li>
+<li>It's everyone's job to recruit and build amazing teams, not just HR's</li>
+</ul>
+</li>
+<li>
+<h3>Ambitious Projects</h3>
+<ul>
+<li>For ambitious, risky projects that don't go well, conduct a postmortem:</li>
+<li>Evaluate what could have been done differently</li>
+<li>Assess if the scope, team, goals, or timelines were misjudged</li>
+<li>Apply lessons learned for continuous improvement</li>
+</ul>
+</li>
+</ul>
+
+Tweet:
+2024-10-20 15:23:20,491 - social_media_agent - DEBUG - Model config: sambanova/Meta-Llama-3.1-8B-Instruct
+2024-10-20 15:23:20,491 - social_media_agent - ERROR - Error generating content: string indices must be integers, not 'str'
+Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/model_manager.py", line 43, in generate_content
+    model=self.config["name"],
+          ~~~~~~~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+2024-10-20 15:23:20,492 - social_media_agent - ERROR - Traceback: Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/model_manager.py", line 43, in generate_content
+    model=self.config["name"],
+          ~~~~~~~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+
+2024-10-20 15:23:20,492 - social_media_agent - INFO - Generated tweet content: None

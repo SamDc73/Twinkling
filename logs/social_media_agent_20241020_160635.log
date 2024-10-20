@@ -1,0 +1,12 @@
+2024-10-20 16:06:35,928 - social_media_agent - INFO - Starting the application...
+2024-10-20 16:06:35,930 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 16:06:35,932 - social_media_agent - INFO - Note manager initialized
+2024-10-20 16:06:35,935 - social_media_agent - INFO - Model manager initialized
+2024-10-20 16:06:35,935 - social_media_agent - INFO - Content generator initialized
+2024-10-20 16:06:35,935 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 16:06:36,210 - social_media_agent - ERROR - An error occurred: 'User' object has no attribute 'username'
+Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/main.py", line 62, in main
+    logger.info(f"Successfully retrieved info for user: @{user_info.username}")
+                                                          ^^^^^^^^^^^^^^^^^^
+AttributeError: 'User' object has no attribute 'username'

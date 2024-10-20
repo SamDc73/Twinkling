@@ -1,0 +1,13 @@
+2024-10-20 16:04:21,763 - social_media_agent - INFO - Starting the application...
+2024-10-20 16:04:21,764 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 16:04:21,766 - social_media_agent - INFO - Note manager initialized
+2024-10-20 16:04:21,769 - social_media_agent - INFO - Model manager initialized
+2024-10-20 16:04:21,769 - social_media_agent - INFO - Content generator initialized
+2024-10-20 16:04:21,770 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 16:04:22,036 - social_media_agent - ERROR - Failed to retrieve user info
+2024-10-20 16:04:23,526 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 16:04:23,526 - social_media_agent - INFO - Fetching note content...
+2024-10-20 16:04:23,530 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 16:04:24,319 - social_media_agent - INFO - Generated tweet content: "Product market fit is not just about growth or downloads, but a state where customers are buying your product as fast as you can make it. Don't mistake high numbers for success - focus on solving real problems and building a sustainable business. #productmarketfit #startups"
+2024-10-20 16:04:27,077 - social_media_agent - INFO - User choice: yes
+2024-10-20 16:04:27,290 - social_media_agent - ERROR - Failed to post tweet.

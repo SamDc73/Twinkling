@@ -1,0 +1,13 @@
+2024-10-20 15:25:39,104 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:25:39,106 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:25:39,108 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:25:39,112 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:25:39,112 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:25:39,112 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:25:40,882 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:25:40,882 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:25:40,890 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:25:41,716 - social_media_agent - INFO - Generated tweet content: "The future of computing is at a crossroads. As semiconductors become increasingly crucial for global economies, the US and China are locked in a high-stakes game of technological one-upmanship. Who will control the chips that power the world? #semiconductors #tech #geopolitics"
+2024-10-20 15:25:54,170 - social_media_agent - WARNING - Invalid input. Please enter Yes, No, or Retry.
+2024-10-20 15:25:57,415 - social_media_agent - INFO - User choice: yes
+2024-10-20 15:25:57,728 - social_media_agent - ERROR - Failed to post tweet.

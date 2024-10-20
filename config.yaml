@@ -1,0 +1,23 @@
+notes_directory: "/home/samdc/Notes/logseq/pages"
+
+api:
+  twitter:
+    tweet_length: 280
+
+ai:
+  model:
+    name: "Meta-Llama-3.1-8B-Instruct"
+    temperature: 0.2
+    top_p: 0.9
+    seed: 123
+    stop: ["\n\n"]
+
+# ... other configurations ...
+
+prompts:
+  tweet_generation: "Based on the following note, generate a tweet in my style:\n\nNote: {note_content}\n\nTweet:"
+
+
+twitter_bio: "Building cool stuff, breaking a few things along the way. Not quite the guru, but close enough"
+
+

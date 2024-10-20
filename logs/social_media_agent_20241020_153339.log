@@ -1,0 +1,38 @@
+2024-10-20 15:33:39,959 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:33:39,961 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:33:39,962 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:33:39,965 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:33:39,965 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:33:39,965 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:33:41,383 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:33:41,383 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:33:41,390 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:33:42,294 - social_media_agent - INFO - Generated tweet content: "Just had a chance to listen to @travisk, the former CEO of @Uber, talk about the company's early days, perseverance, and vision for the future of transportation. From reducing traffic in Boston to making transportation as reliable as running water, the possibilities are endless #Uber #Transportation #FutureOfWork"
+2024-10-20 15:33:43,492 - social_media_agent - WARNING - Invalid input. Please enter Yes, No, or Retry.
+2024-10-20 15:33:47,401 - social_media_agent - INFO - User choice: yes
+2024-10-20 15:33:47,685 - social_media_agent - ERROR - An error occurred: module 'tweepy' has no attribute 'TweepError'
+Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/social_media/twitter.py", line 32, in post_tweet
+    response = self.client.create_tweet(text=content)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samdc/Dev/social_media_agent/social_media_agent/lib/python3.12/site-packages/tweepy/client.py", line 835, in create_tweet
+    return self._make_request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/samdc/Dev/social_media_agent/social_media_agent/lib/python3.12/site-packages/tweepy/client.py", line 129, in _make_request
+    response = self.request(method, route, params=request_params,
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samdc/Dev/social_media_agent/social_media_agent/lib/python3.12/site-packages/tweepy/client.py", line 100, in request
+    raise Forbidden(response)
+tweepy.errors.Forbidden: 403 Forbidden
+Your client app is not configured with the appropriate oauth1 app permissions for this endpoint.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/main.py", line 82, in main
+    success = twitter_poster.post_tweet(tweet_content)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/samdc/Dev/social_media_agent/src/social_media/twitter.py", line 35, in post_tweet
+    except tweepy.TweepError as e:
+           ^^^^^^^^^^^^^^^^^
+AttributeError: module 'tweepy' has no attribute 'TweepError'

@@ -1,0 +1,13 @@
+2024-10-20 15:28:43,196 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:28:43,198 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:28:43,200 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:28:43,203 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:28:43,203 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:28:43,203 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:28:44,700 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:28:44,700 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:28:44,708 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:28:45,848 - social_media_agent - INFO - Generated tweet content: "Boosting LLM serving efficiency by 3-5x with vLLM and Page Attention! This innovative solution minimizes internal fragmentation, eliminates external fragmentation, and enables significant increases in batch size and serving throughput. #LLMs #AI #MachineLearning"
+2024-10-20 15:28:48,086 - social_media_agent - WARNING - Invalid input. Please enter Yes, No, or Retry.
+2024-10-20 15:28:50,371 - social_media_agent - INFO - User choice: yes
+2024-10-20 15:28:50,607 - social_media_agent - ERROR - Failed to post tweet.

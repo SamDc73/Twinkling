@@ -1,0 +1,14 @@
+2024-10-20 16:15:56,926 - social_media_agent - INFO - Starting the application...
+2024-10-20 16:15:56,929 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 16:15:56,931 - social_media_agent - INFO - Note manager initialized
+2024-10-20 16:15:56,934 - social_media_agent - INFO - Model manager initialized
+2024-10-20 16:15:56,934 - social_media_agent - INFO - Content generator initialized
+2024-10-20 16:15:56,935 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 16:15:57,405 - social_media_agent - INFO - Successfully retrieved info for user: @SamDc73
+2024-10-20 16:15:59,021 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 16:15:59,021 - social_media_agent - INFO - Fetching note content...
+2024-10-20 16:15:59,026 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 16:16:01,432 - social_media_agent - INFO - Generated tweet content: "The ease of access to information can lead to a devaluation of the kind of memory that's truly important for living a rich, meaningful life. We need to integrate knowledge into our consciousness, not just skim the surface. #MoonwalkingWithEinstein #KnowledgeVsWisdom"
+2024-10-20 16:16:03,361 - social_media_agent - WARNING - Invalid input. Please enter Yes, No, or Retry.
+2024-10-20 16:16:04,671 - social_media_agent - INFO - User choice: yes
+2024-10-20 16:16:04,958 - social_media_agent - INFO - Tweet posted successfully!

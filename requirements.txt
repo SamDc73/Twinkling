@@ -1,0 +1,6 @@
+python-dotenv
+tweepy
+litellm
+pyyaml
+markdown
+

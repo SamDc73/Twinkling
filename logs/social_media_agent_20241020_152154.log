@@ -1,0 +1,119 @@
+2024-10-20 15:21:54,371 - social_media_agent - INFO - Starting the application...
+2024-10-20 15:21:54,372 - social_media_agent - INFO - Config loaded successfully
+2024-10-20 15:21:54,374 - social_media_agent - INFO - Note manager initialized
+2024-10-20 15:21:54,376 - social_media_agent - INFO - Environment loaded from /home/samdc/Dev/social_media_agent/src/../.env
+2024-10-20 15:21:54,376 - social_media_agent - INFO - ModelManager initialized with config: sambanova/Meta-Llama-3.1-8B-Instruct
+2024-10-20 15:21:54,376 - social_media_agent - INFO - Model manager initialized
+2024-10-20 15:21:54,376 - social_media_agent - INFO - Content generator initialized
+2024-10-20 15:21:54,377 - social_media_agent - INFO - Twitter poster initialized
+2024-10-20 15:22:04,207 - social_media_agent - INFO - User entered tag: ''
+2024-10-20 15:22:04,207 - social_media_agent - INFO - Fetching note content...
+2024-10-20 15:22:04,213 - social_media_agent - INFO - Note content found, generating tweet...
+2024-10-20 15:22:04,213 - social_media_agent - INFO - Generating content with prompt: Based on the following note, generate a tweet in m...
+2024-10-20 15:22:04,213 - social_media_agent - DEBUG - Full prompt: Based on the following note, generate a tweet in my style:
+
+Note: <p>title:: Carl Icahn on Fed Policy, Activist Investing and McDonald's
+full-title:: Full Interview: Carl Icahn on Fed Policy, Activist Investing and McDonald's
+People:: [[Carl Icahn ]]
+Channel:: [[Bloomberg Television]]
+Youtube-id:: z00y3aWYRKs
+Year:: 2022</p>
+<ul>
+<li>
+<h3>Early Life and Background</h3>
+</li>
+<li>Carl Icahn is celebrating his 86th birthday</li>
+<li>"If I'm not mistaken Carl your 86 years old today and you are celebrating your birthday with us with us which we're actually quite happy about."</li>
+<li>
+<h3>Inflation and Fed Stimulus</h3>
+</li>
+<li>Icahn predicted months ago that Fed stimulus would lead to inflation</li>
+<li>"You predicted months ago that Fed stimulus would metastasize into inflation and fast become a problem for policymakers for the economy and of course for investors as well."</li>
+<li>"But sooner or later a situation like this is good and relatively badly. Some less badly some more. But you can't keep printing up money and printed it up and printing it up because you act that which you have now that you can control or government can't control inflation if it controls it."</li>
+<li>
+<h3>Bear Markets and Stock Predictions</h3>
+</li>
+<li>Icahn is not predicting a near-term bear market</li>
+<li>"I'm not predicting a near-term bear market. I nobody can predict what's going to happen next week next month maybe even next year or two. You can't you really can't predict that."</li>
+<li>"I'm not here to discuss. I'm not a macroeconomics guru. And I just look at simple facts. That's what it's all I do. Simple facts."</li>
+<li>“I learned this the hard way but stay away from predicting the near term market movement”</li>
+<li>Cheap stock is when we see the company is heading the write direction</li>
+<li>
+<h3>Activism and Creating Value</h3>
+</li>
+<li>Icahn's investment paradigm is activism, going into undervalued companies and improving them</li>
+<li>"The paradigm that I find the best for investing and it's obviously most people can't do it is activism and and going into companies where the stock. Selling cheaply for a number of reasons."</li>
+<li>"The proof of the pudding is the 80. You did very well by following and doing this. What we do."</li>
+<li>"We created a trillion dollars of value for shells."</li>
+<li>
+<h3>Corporate Accountability Issues</h3>
+</li>
+<li>Icahn believes many U.S. companies are mismanaged due to lack of accountability</li>
+<li>"One of the real problems of this country is set up for and maybe one of our problems is we have great corporations but in many of them a terribly managed."</li>
+<li>"The boards are doing the one job that paid to do which is make that CEO accountable."</li>
+<li>
+<h3>SEC Proposed Activism Rules</h3>
+</li>
+<li>Icahn is against SEC rules that would discourage activism by requiring faster disclosures</li>
+<li>"What they're doing now is throwing out the baby with the bathwater when it comes to activism."</li>
+<li>"This rule is going to be almost the last nail in the course. There are a lot of nails in that closet already."</li>
+<li>"You do need activism. And this is going to be almost the last nail in the course."</li>
+<li>
+<h3>Donald Trump and Politics</h3>
+</li>
+<li>Icahn supported Trump in 2016 but is undecided on 2024</li>
+<li>"I would support any Republican is nominated for the presidency the way the way this plays out today."</li>
+<li>"I'm not saying that you know Trump is necessary to the right guy. I must say he's the wrong guy."</li>
+<li>
+<h3>Income Inequality and CEO Pay</h3>
+</li>
+<li>Icahn is critical of high CEO pay and lack of accountability</li>
+<li>"If you really understood what went on of these companies which we do or I do you would be saying you can't believe it."</li>
+<li>"The CEO does a terrible job. So his options still come in. So he complains."</li>
+<li>
+<h3>McDonald's Proxy Fight</h3>
+</li>
+<li>Icahn is waging a proxy fight over animal welfare issues at McDonald's</li>
+<li>"We are probably 90 percent we're putting up the slate. You know we're not going to fool around with them anymore putting up a slate and say hey you've got to live up to your promise and you've got to do this seriously."</li>
+<li>"It's obscene the chickens where they don't have to suffer."</li>
+<li>
+<h3>Commodities and Energy</h3>
+</li>
+<li>Icahn is bullish on LNG (liquefied natural gas) companies</li>
+<li>"I'm very bullish on and obviously people know this at an LNG for instance Cheniere."</li>
+<li>"The long term and the trading commodity is not my thing."</li>
+<li>
+<h3>Activism Battles and Bankers</h3>
+</li>
+<li>Icahn uses Citibank and Jefferies for raising capital</li>
+<li>"We found Citibank to be very very effective. Jefferies is another company that's very effective in raising capital as far as we're concerned."</li>
+<li>
+<h3>SW Corporation Proxy Fight</h3>
+</li>
+<li>Icahn has launched a tender offer and proxy fight at SW Corporation</li>
+<li>"We are making that tender offer and we believe it will be successful."</li>
+<li>"It's just a matter of time. You think before you merge negation but I believe it's about our time."</li>
+<li>
+<h3>Succession and Legacy</h3>
+</li>
+<li>Icahn's son Brett is a likely successor at Icahn Enterprises</li>
+<li>"Brett is a very competent guy. And I think it's going to work out that he that Brett is."</li>
+<li>Icahn has given to various institutions but plans to focus on animal rights causes</li>
+<li>"I think that's that's a situation that's just horrible. It's obscene. You've got you've got these companies make it all this money and these animals just suffered."</li>
+</ul>
+
+Tweet:
+2024-10-20 15:22:04,213 - social_media_agent - DEBUG - Model config: sambanova/Meta-Llama-3.1-8B-Instruct
+2024-10-20 15:22:04,213 - social_media_agent - ERROR - Error generating content: string indices must be integers, not 'str'
+Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/model_manager.py", line 43, in generate_content
+    model=self.config["name"],
+          ~~~~~~~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+2024-10-20 15:22:04,214 - social_media_agent - ERROR - Traceback: Traceback (most recent call last):
+  File "/home/samdc/Dev/social_media_agent/src/model_manager.py", line 43, in generate_content
+    model=self.config["name"],
+          ~~~~~~~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+
+2024-10-20 15:22:04,214 - social_media_agent - INFO - Generated tweet content: None
