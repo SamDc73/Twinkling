@@ -1,23 +1,44 @@
 notes_directory: "/home/samdc/Notes/logseq/pages"
 
+topics:
+  - "Programming"
+  - "Electrical Engineering"
+  - "Python"
+  - "Hackathons"
+  - "Machine Learning"
+  - "Artificial Intelligence"
+  - "Books"
+
+topics_to_avoid:
+  - "Politics"
+  - "Religion"
+  - "investing"
+  - "cryptocurrency"
+  - "blockchain"
+  - "NFTs"
+  - "Gaming"
+  - "Sports"
+  - "Celebrity Gossip"
+  - "Fashion"
+  - "Music"
+  - "Movies"
+  - "TV Shows"
+  - "Health"
+
 api:
   twitter:
     tweet_length: 280
+    bio: "Building cool stuff, breaking a few things along the way. Not quite the guru, but close enough"
+    location: "San Francisco Bay Area"
 
 ai:
   model:
-    name: "Meta-Llama-3.1-8B-Instruct"
+    name: "Meta-Llama-3.1-405B-Instruct"
     temperature: 0.2
     top_p: 0.9
     seed: 123
-    stop: ["\n\n"]
-
-# ... other configurations ...
+    stop:
+      - "\n\n"
 
 prompts:
-  tweet_generation: "Based on the following note, generate a tweet in my style:\n\nNote: {note_content}\n\nTweet:"
-
-
-twitter_bio: "Building cool stuff, breaking a few things along the way. Not quite the guru, but close enough"
-
-
+  tweet_generation: "Based on the following note, generate a tweet in my style. Use simple, plain English. Be direct and clear. Avoid hype words or jargon. Keep it short and casual, like you're talking to a friend. Focus on these topics: {topics}. Avoid these topics: {topics_to_avoid}.\n\nNote: {note_content}\n\nTweet:"
