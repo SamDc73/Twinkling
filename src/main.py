@@ -43,10 +43,18 @@ def main() -> None:
 
         note_manager = NoteManager(config["notes_directory"])
         logger.info("Note manager initialized")
+
         model_manager = ModelManager()
         logger.info("Model manager initialized")
-        content_generator = ContentGenerator(model_manager, config["prompts"])
+
+        content_generator = ContentGenerator(
+            model_manager,
+            config["prompts"],
+            config["topics"],
+            config["topics_to_avoid"]
+        )
         logger.info("Content generator initialized")
+
         twitter_poster = TwitterPoster()
         logger.info("Twitter poster initialized")
 
@@ -56,6 +64,16 @@ def main() -> None:
         else:
             logger.error("Failed to retrieve user info")
             return
+
+        # Update user profile
+        user_profile = {
+            "bio": config["api"]["twitter"]["bio"],
+            "location": config["api"]["twitter"]["location"]
+        }
+        if twitter_poster.update_profile(user_profile):
+            logger.info("User profile updated successfully")
+        else:
+            logger.warning("Failed to update user profile")
 
         tag: str | None = input(
             "Enter a tag for the note (leave empty for random): "

@@ -65,3 +65,15 @@ class TwitterPoster:
                 f"Error details: {e.api_errors if hasattr(e, 'api_errors') else 'No additional details'}"
             )
             return None
+
+    def update_profile(self, profile_data: dict) -> bool:
+        try:
+            self.api.update_profile(
+                description=profile_data.get("bio"),
+                location=profile_data.get("location")
+            )
+            logger.info("Profile updated successfully")
+            return True
+        except tweepy.errors.TweepyException as e:
+            logger.error(f"Error updating profile: {str(e)}")
+            return False
