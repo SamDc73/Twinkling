@@ -82,41 +82,47 @@ def main() -> None:
 
         while True:
             logger.info("Fetching note content...")
-            note_content = (
+            note_content, note_filename = (
                 note_manager.get_tagged_note(tag)
                 if tag
                 else note_manager.get_random_tech_note()
             )
 
-            if note_content:
-                logger.info("Note content found, generating tweet...")
+            if note_content and note_filename:
+                logger.info(f"Note content found from file: {note_filename}")
+                print(f"\nUsing note from file: {note_filename}\n")
+
                 tweet_content = content_generator.generate_tweet(note_content)
                 logger.info(f"Generated tweet content: {tweet_content}")
+                print(f"\nGenerated Tweet:\n{tweet_content}\n")
 
                 choice = get_user_input()
                 logger.info(f"User choice: {choice}")
 
                 if choice == "yes":
-                    # Optionally, you can add image posting here if needed
-                    # image_path = "path/to/your/image.png"
-                    # success = twitter_poster.post_tweet(tweet_content, image_path)
                     success = twitter_poster.post_tweet(tweet_content)
                     if success:
                         logger.info("Tweet posted successfully!")
+                        print("Tweet posted successfully!")
                     else:
                         logger.error("Failed to post tweet.")
+                        print("Failed to post tweet.")
                     break
                 elif choice == "no":
                     logger.info("Tweet discarded.")
+                    print("Tweet discarded.")
                     break
                 else:  # retry
                     logger.info("Generating a new tweet...")
+                    print("Generating a new tweet...\n")
             else:
                 logger.warning(f"No{'tagged' if tag else ''} notes found.")
+                print(f"No{'tagged' if tag else ''} notes found.")
                 break
 
     except Exception as e:
         logger.exception(f"An error occurred: {str(e)}")
+        print(f"An error occurred: {str(e)}")
 
 
 if __name__ == "__main__":
