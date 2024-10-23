@@ -1,34 +1,22 @@
 import os
 
-import yaml
-from dotenv import load_dotenv
 from litellm import completion
 
+from config import load_config
 from utils import get_logger
 
 
 class ModelManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = get_logger(__name__)
-        self.config = self.load_config()
+        config = load_config()
+        self.config = config.get("ai", {}).get("model", {})
+        if not self.config:
+            raise ValueError("Model configuration not found in config.yaml")
         self.setup_environment()
         self.logger.info(f"ModelManager initialized with model: {self.config['name']}")
 
-    def load_config(self):
-        config_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
-        try:
-            with open(config_path) as config_file:
-                full_config = yaml.safe_load(config_file)
-            model_config = full_config.get("ai", {}).get("model", {})
-            if not model_config:
-                raise ValueError("Model configuration not found in config.yaml")
-            return model_config
-        except Exception as e:
-            self.logger.error(f"Error loading configuration: {e}")
-            raise
-
-    def setup_environment(self):
-        load_dotenv()
+    def setup_environment(self) -> None:
         sambanova_api_key = os.getenv("SAMBANOVA_API_KEY")
         if not sambanova_api_key:
             self.logger.error("SAMBANOVA_API_KEY not found in environment variables")

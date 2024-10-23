@@ -14,7 +14,7 @@ class ContentGenerator:
         prompt = self.prompts["tweet_generation"].format(
             note_content=note_content,
             topics=", ".join(self.topics),
-            topics_to_avoid=", ".join(self.topics_to_avoid)
+            topics_to_avoid=", ".join(self.topics_to_avoid),
         )
         self.logger.info(f"Generating tweet with prompt: {prompt[:50]}...")
         tweet = self.model_manager.generate_content(prompt)
