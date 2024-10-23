@@ -37,7 +37,7 @@ class NoteManager:
                     self.logger.info(f"Found tech-related note: {file}")
                     return self.md.convert(content), file
             except Exception as e:
-                self.logger.error(f"Error reading file {file}: {str(e)}")
+                self.logger.exception(f"Error reading file {file}: {e!s}")
 
         self.logger.warning("No tech-related notes found")
         return None, None

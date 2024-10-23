@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from utils import get_logger
 
+
 logger = get_logger(__name__)
 
 
@@ -22,8 +23,9 @@ def load_env_vars() -> None:
 
     missing_vars = [var for var in required_vars if not os.getenv(var)]
     if missing_vars:
+        msg = f"Missing required environment variables: {', '.join(missing_vars)}"
         raise ValueError(
-            f"Missing required environment variables: {', '.join(missing_vars)}"
+            msg,
         )
 
 
@@ -33,8 +35,8 @@ def load_config() -> dict:
         with open(config_path) as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
-        logger.error(f"Config file not found: {config_path}")
+        logger.exception(f"Config file not found: {config_path}")
         raise
     except yaml.YAMLError as e:
-        logger.error(f"Error parsing config file: {e}")
+        logger.exception(f"Error parsing config file: {e}")
         raise

@@ -12,7 +12,8 @@ class ModelManager:
         config = load_config()
         self.config = config.get("ai", {}).get("model", {})
         if not self.config:
-            raise ValueError("Model configuration not found in config.yaml")
+            msg = "Model configuration not found in config.yaml"
+            raise ValueError(msg)
         self.setup_environment()
         self.logger.info(f"ModelManager initialized with model: {self.config['name']}")
 
@@ -20,7 +21,8 @@ class ModelManager:
         sambanova_api_key = os.getenv("SAMBANOVA_API_KEY")
         if not sambanova_api_key:
             self.logger.error("SAMBANOVA_API_KEY not found in environment variables")
-            raise ValueError("SAMBANOVA_API_KEY is required")
+            msg = "SAMBANOVA_API_KEY is required"
+            raise ValueError(msg)
         os.environ["SAMBANOVA_API_KEY"] = sambanova_api_key
 
     def generate_content(self, prompt: str, max_tokens: int = 280) -> str:
@@ -32,7 +34,7 @@ class ModelManager:
                     {
                         "role": "user",
                         "content": prompt,
-                    }
+                    },
                 ],
                 max_tokens=max_tokens,
                 temperature=self.config.get("temperature", 0.7),
@@ -52,11 +54,10 @@ class ModelManager:
                 content = response.choices[0].message.content.strip()
                 self.logger.info(f"Generated content: {content[:50]}...")
                 return content
-            else:
-                self.logger.error("No content generated in the response")
-                return None
+            self.logger.error("No content generated in the response")
+            return None
         except Exception as e:
-            self.logger.exception(f"Error generating content: {str(e)}")
+            self.logger.exception(f"Error generating content: {e!s}")
             return None
 
     def get_model_info(self) -> str:
@@ -65,6 +66,4 @@ class ModelManager:
 
 if __name__ == "__main__":
     manager = ModelManager()
-    print(manager.get_model_info())
     result = manager.generate_content("Write a short tweet about Python programming.")
-    print(f"Generated content: {result}")

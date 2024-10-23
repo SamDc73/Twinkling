@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from typing import Literal
 
+
 # Suppress litellm debug messages
 logging.getLogger("litellm").setLevel(logging.WARNING)
 
@@ -31,7 +32,7 @@ def setup_logging(verbose: bool = False, quiet: bool = False) -> logging.Logger:
 
     # Create formatters and add it to handlers
     file_format = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     console_format = logging.Formatter("%(levelname)s: %(message)s")
     file_handler.setFormatter(file_format)

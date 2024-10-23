@@ -3,7 +3,8 @@ from content_generator import ContentGenerator
 from model_manager import ModelManager
 from note_manager import NoteManager
 from social_media.twitter import TwitterPoster
-from utils import get_logger, setup_logging
+from utils import setup_logging
+
 
 logger = setup_logging(verbose=True)
 
@@ -40,30 +41,24 @@ def main() -> None:
 
         if not note_content or not note_filename:
             logger.warning(f"No{'tagged' if tag else ''} notes found.")
-            print(f"No{'tagged' if tag else ''} notes found.")
             return
 
         logger.info(f"Note content found from file: {note_filename}")
-        print(f"\nUsing note from file: {note_filename}\n")
 
         while True:
             tweet_content = content_generator.generate_tweet(note_content)
-            print(f"\nGenerated Tweet:\n{tweet_content}\n")
 
             choice = input("Do you want to post this tweet? [Yes/No/Retry]: ").lower()
             if choice == "yes":
                 if twitter_poster.post_tweet(tweet_content):
-                    print("Tweet posted successfully!")
                     break
             elif choice == "no":
-                print("Tweet discarded.")
                 break
             else:
-                print("Generating a new tweet...\n")
+                pass
 
     except Exception as e:
-        logger.exception(f"An error occurred: {str(e)}")
-        print(f"An error occurred: {str(e)}")
+        logger.exception(f"An error occurred: {e!s}")
 
 
 if __name__ == "__main__":

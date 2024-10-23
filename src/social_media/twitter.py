@@ -4,6 +4,7 @@ import tweepy
 
 from utils import get_logger
 
+
 logger = get_logger(__name__)
 
 
@@ -35,10 +36,10 @@ class TwitterPoster:
 
             logger.info("Twitter API client initialized successfully")
         except Exception as e:
-            logger.exception(f"Error initializing Twitter API client: {str(e)}")
+            logger.exception(f"Error initializing Twitter API client: {e!s}")
             raise
 
-    def post_tweet(self, content: str, image_path: str = None) -> bool:
+    def post_tweet(self, content: str, image_path: str | None = None) -> bool:
         try:
             media_ids = None
             if image_path and os.path.exists(image_path):
@@ -49,9 +50,9 @@ class TwitterPoster:
             logger.info(f"Tweet posted successfully. Tweet ID: {response.data['id']}")
             return True
         except tweepy.errors.TweepyException as e:
-            logger.error(f"Error posting tweet: {str(e)}")
-            logger.error(
-                f"Error details: {e.api_errors if hasattr(e, 'api_errors') else 'No additional details'}"
+            logger.exception(f"Error posting tweet: {e!s}")
+            logger.exception(
+                f"Error details: {e.api_errors if hasattr(e, 'api_errors') else 'No additional details'}",
             )
             return False
 
@@ -62,8 +63,8 @@ class TwitterPoster:
             logger.info(f"Retrieved user info for: @{user.username}")
             return user
         except tweepy.errors.TweepyException as e:
-            logger.error(f"Error retrieving user info: {str(e)}")
-            logger.error(
-                f"Error details: {e.api_errors if hasattr(e, 'api_errors') else 'No additional details'}"
+            logger.exception(f"Error retrieving user info: {e!s}")
+            logger.exception(
+                f"Error details: {e.api_errors if hasattr(e, 'api_errors') else 'No additional details'}",
             )
             return None
