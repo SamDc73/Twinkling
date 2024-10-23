@@ -7,7 +7,10 @@ from utils import get_logger
 
 
 class ModelManager:
+    """Manager for handling AI model interactions."""
+
     def __init__(self) -> None:
+        """Initialize the ModelManager with configuration and environment setup."""
         self.logger = get_logger(__name__)
         config = load_config()
         self.config = config.get("ai", {}).get("model", {})
@@ -15,9 +18,16 @@ class ModelManager:
             msg = "Model configuration not found in config.yaml"
             raise ValueError(msg)
         self.setup_environment()
-        self.logger.info(f"ModelManager initialized with model: {self.config['name']}")
+        self.logger.info("ModelManager initialized with model: %s", self.config["name"])
 
     def setup_environment(self) -> None:
+        """Set up required environment variables for the model.
+
+        Raises
+        ------
+        ValueError
+            If the required API key is not found.
+        """
         sambanova_api_key = os.getenv("SAMBANOVA_API_KEY")
         if not sambanova_api_key:
             self.logger.error("SAMBANOVA_API_KEY not found in environment variables")
@@ -25,9 +35,23 @@ class ModelManager:
             raise ValueError(msg)
         os.environ["SAMBANOVA_API_KEY"] = sambanova_api_key
 
-    def generate_content(self, prompt: str, max_tokens: int = 280) -> str:
+    def generate_content(self, prompt: str, max_tokens: int = 280) -> str | None:
+        """Generate content using the AI model.
+
+        Parameters
+        ----------
+        prompt : str
+            The prompt to generate content from.
+        max_tokens : int, optional
+            Maximum number of tokens to generate, by default 280.
+
+        Returns
+        -------
+        str | None
+            Generated content if successful, None otherwise.
+        """
         try:
-            self.logger.info(f"Generating content with prompt: {prompt[:50]}...")
+            self.logger.info("Generating content with prompt: %s...", prompt[:50])
             response = completion(
                 model=f"sambanova/{self.config['name']}",
                 messages=[
@@ -48,19 +72,27 @@ class ModelManager:
             )
 
             self.logger.info("Response received")
-            self.logger.debug(f"Full response: {response}")
+            self.logger.debug("Full response: %s", response)
 
-            if isinstance(response.choices, list) and len(response.choices) > 0:
+            if isinstance(response.choices, list) and response.choices:
                 content = response.choices[0].message.content.strip()
-                self.logger.info(f"Generated content: {content[:50]}...")
+                self.logger.info("Generated content: %s...", content[:50])
                 return content
+
             self.logger.error("No content generated in the response")
-            return None
-        except Exception as e:
-            self.logger.exception(f"Error generating content: {e!s}")
-            return None
+        except Exception:
+            self.logger.exception("Error generating content")
+
+        return None
 
     def get_model_info(self) -> str:
+        """Get information about the current model.
+
+        Returns
+        -------
+        str
+            Description of the model being used.
+        """
         return f"Using Sambanova model: {self.config['name']}"
 
 

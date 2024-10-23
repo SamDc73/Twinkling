@@ -1,6 +1,6 @@
 import logging
-import os
-from datetime import datetime
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Literal
 
 
@@ -8,17 +8,35 @@ from typing import Literal
 logging.getLogger("litellm").setLevel(logging.WARNING)
 
 
-def setup_logging(verbose: bool = False, quiet: bool = False) -> logging.Logger:
-    log_dir = "logs"
-    os.makedirs(log_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"social_media_agent_{timestamp}.log")
+LoggingMode = Literal["normal", "verbose", "quiet"]
+
+
+def setup_logging(*, mode: LoggingMode = "normal") -> logging.Logger:
+    """Set up logging configuration.
+
+    Parameters
+    ----------
+    mode : Literal["normal", "verbose", "quiet"], optional
+        Logging mode to use, by default "normal"
+
+    Returns
+    -------
+    logging.Logger
+        Configured logger instance.
+    """
+    log_dir = Path("logs")
+    log_dir.mkdir(exist_ok=True, parents=True)
+
+    timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"social_media_agent_{timestamp}.log"
 
     # Define log levels
     file_level = logging.DEBUG
-    console_level: Literal["DEBUG", "INFO", "ERROR"] = (
-        "ERROR" if quiet else "DEBUG" if verbose else "INFO"
-    )
+    console_level = {
+        "quiet": logging.ERROR,
+        "normal": logging.INFO,
+        "verbose": logging.DEBUG,
+    }[mode]
 
     # Create a custom logger
     logger = logging.getLogger("social_media_agent")
@@ -28,7 +46,7 @@ def setup_logging(verbose: bool = False, quiet: bool = False) -> logging.Logger:
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(file_level)
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(getattr(logging, console_level))
+    console_handler.setLevel(console_level)
 
     # Create formatters and add it to handlers
     file_format = logging.Formatter(
@@ -46,4 +64,16 @@ def setup_logging(verbose: bool = False, quiet: bool = False) -> logging.Logger:
 
 
 def get_logger(name: str = "social_media_agent") -> logging.Logger:
+    """Get a logger instance.
+
+    Parameters
+    ----------
+    name : str, optional
+        Name of the logger, by default "social_media_agent"
+
+    Returns
+    -------
+    logging.Logger
+        Logger instance.
+    """
     return logging.getLogger(name)

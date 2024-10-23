@@ -6,7 +6,7 @@ from social_media.twitter import TwitterPoster
 from utils import setup_logging
 
 
-logger = setup_logging(verbose=True)
+logger = setup_logging()
 
 
 def main() -> None:
@@ -31,19 +31,16 @@ def main() -> None:
 
         # Get note content
         tag = input("Enter a tag for the note (leave empty for random): ").strip()
-        logger.info(f"User entered tag: '{tag}'")
+        logger.info("User entered tag: '%s'", tag)
 
-        note_content, note_filename = (
-            note_manager.get_tagged_note(tag)
-            if tag
-            else note_manager.get_random_tech_note()
-        )
+        note_content, note_filename = note_manager.get_tagged_note(tag) if tag else note_manager.get_random_tech_note()
 
         if not note_content or not note_filename:
-            logger.warning(f"No{'tagged' if tag else ''} notes found.")
+            tag_status = "tagged " if tag else ""
+            logger.warning("No %snotes found.", tag_status)
             return
 
-        logger.info(f"Note content found from file: {note_filename}")
+        logger.info("Note content found from file: %s", note_filename)
 
         while True:
             tweet_content = content_generator.generate_tweet(note_content)
@@ -57,8 +54,8 @@ def main() -> None:
             else:
                 pass
 
-    except Exception as e:
-        logger.exception(f"An error occurred: {e!s}")
+    except Exception:
+        logger.exception("An error occurred")
 
 
 if __name__ == "__main__":
