@@ -1,3 +1,4 @@
+import argparse
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -77,3 +78,19 @@ def get_logger(name: str = "social_media_agent") -> logging.Logger:
         Logger instance.
     """
     return logging.getLogger(name)
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Social media post generator")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--platform",
+        nargs="+",
+        choices=["twitter", "bluesky"],
+        help="One or more platforms to post to (e.g., --platform twitter bluesky)",
+    )
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="Post to all available platforms",
+    )
+    return parser.parse_args()

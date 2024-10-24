@@ -21,6 +21,28 @@ class NoteManager:
         self.md = Markdown()
         self.logger = get_logger(__name__)
 
+    def get_note_content(self) -> tuple[str | None, str | None]:
+        """Get note content based on user input.
+
+        Returns
+        -------
+        tuple[str | None, str | None]
+            Tuple of (note content, filename) if found, (None, None) if not found.
+        """
+        tag = input("Enter a tag for the note (leave empty for random): ").strip()
+        self.logger.info("User entered tag: '%s'", tag)
+
+        note_content, note_filename = self.get_tagged_note(tag) if tag else self.get_random_tech_note()
+
+        if not note_content or not note_filename:
+            tag_status = "tagged " if tag else ""
+            self.logger.warning("No %snotes found.", tag_status)
+            return None, None
+
+        self.logger.info("Note content found from file: %s", note_filename)
+        return note_content, note_filename
+
+
     def is_tech_related(self, content: str) -> bool:
         """Check if content is tech-related.
 

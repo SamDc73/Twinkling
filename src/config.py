@@ -22,6 +22,8 @@ def load_env_vars() -> None:
         "TWITTER_API_KEY",
         "TWITTER_API_SECRET",
         "TWITTER_BEARER_TOKEN",
+        "BLUESKY_USERNAME",
+        "BLUESKY_PASSWORD",
     ]
 
     missing_vars = [var for var in required_vars if not os.getenv(var)]
