@@ -81,16 +81,31 @@ def get_logger(name: str = "social_media_agent") -> logging.Logger:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Social media post generator")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
+
+    # Platform group
+    platform_group = parser.add_mutually_exclusive_group()
+    platform_group.add_argument(
         "--platform",
         nargs="+",
         choices=["twitter", "bluesky"],
         help="One or more platforms to post to (e.g., --platform twitter bluesky)",
     )
-    group.add_argument(
+    platform_group.add_argument(
         "--all",
         action="store_true",
         help="Post to all available platforms",
     )
+
+    kb_group = parser.add_mutually_exclusive_group()
+    kb_group.add_argument(
+        "--init-kb",
+        action="store_true",
+        help="Initialize/create the knowledge base",
+    )
+    kb_group.add_argument(
+        "--update-kb",
+        action="store_true",
+        help="Update existing knowledge base with new/modified notes",
+    )
+
     return parser.parse_args()

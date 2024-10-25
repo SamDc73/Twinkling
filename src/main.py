@@ -2,6 +2,7 @@ from config import load_config, load_env_vars
 from content_generator import ContentGenerator
 from model_manager import ModelManager
 from note_manager import NoteManager
+from rag.knowledge_base import KnowledgeBaseProcessor
 from social_media import initialize_platforms
 from utils import parse_args, setup_logging
 
@@ -16,6 +17,20 @@ def main() -> None:
         load_env_vars()
         config = load_config()
         logger.info("Config loaded successfully")
+
+        # Handle knowledge base operations
+        if args.init_kb or args.update_kb:
+            kb_processor = KnowledgeBaseProcessor()
+
+            if args.init_kb:
+                logger.info("Initializing knowledge base...")
+                kb_processor.initialize_knowledge_base()
+                return
+
+            if args.update_kb:
+                logger.info("Updating knowledge base...")
+                kb_processor.update_knowledge_base()
+                return
 
         # Initialize components
         note_manager = NoteManager(config["notes_directory"])
