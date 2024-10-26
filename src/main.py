@@ -19,18 +19,11 @@ def main() -> None:
         logger.info("Config loaded successfully")
 
         # Handle knowledge base operations
-        if args.init_kb or args.update_kb:
+        if args.sync_kb:
             kb_processor = KnowledgeBaseProcessor()
-
-            if args.init_kb:
-                logger.info("Initializing knowledge base...")
-                kb_processor.initialize_knowledge_base()
-                return
-
-            if args.update_kb:
-                logger.info("Updating knowledge base...")
-                kb_processor.update_knowledge_base()
-                return
+            logger.info("Synchronizing knowledge base...")
+            kb_processor.sync_knowledge_base()
+            return
 
         # Initialize components
         note_manager = NoteManager(config["notes_directory"])

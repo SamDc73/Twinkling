@@ -96,16 +96,10 @@ def parse_args() -> argparse.Namespace:
         help="Post to all available platforms",
     )
 
-    kb_group = parser.add_mutually_exclusive_group()
-    kb_group.add_argument(
-        "--init-kb",
+    parser.add_argument(
+        "--sync-kb",
         action="store_true",
-        help="Initialize/create the knowledge base",
-    )
-    kb_group.add_argument(
-        "--update-kb",
-        action="store_true",
-        help="Update existing knowledge base with new/modified notes",
+        help="Synchronize knowledge base with notes (initialize if needed)",
     )
 
     return parser.parse_args()

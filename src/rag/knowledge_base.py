@@ -1,14 +1,20 @@
+import multiprocessing
 import re
-from dataclasses import dataclass
-from tqdm import tqdm
-from pathlib import Path
 import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+from pathlib import Path
+
 from neo4j import Driver, GraphDatabase, Session
 from sentence_transformers import SentenceTransformer
+from tqdm import tqdm
 
 from config import load_config
 from utils import get_logger
 
+
+# Set start method to 'spawn' for CUDA support
+multiprocessing.set_start_method("spawn", force=True)
 
 @dataclass
 class Block:
@@ -29,7 +35,7 @@ class KnowledgeBaseProcessor:
         self.similarity_threshold = self.config["knowledge_base"]["embedding"]["similarity_threshold"]
 
         # Initialize Neo4j connection
-        neo4j_config = self.config["knowledge_base"]["neo4j"]
+        neo4j_config = self.config["knowledge_base"]["database"]
         self.driver: Driver = GraphDatabase.driver(
             neo4j_config["uri"],
             auth=(neo4j_config["user"], neo4j_config["password"]),
@@ -53,17 +59,96 @@ class KnowledgeBaseProcessor:
                 FOR (t:Tag) REQUIRE t.name IS UNIQUE
             """)
 
-            # Create vector index
-            idx_config = self.config["knowledge_base"]["indexes"][0]
+            # Create vector index with hardcoded values
             session.run(f"""
                 CALL db.index.vector.createNodeIndex(
-                    '{idx_config["name"]}',
-                    '{idx_config["node_label"]}',
-                    '{idx_config["property"]}',
-                    {idx_config["dimension"]},
+                    'block_embedding',
+                    'Block',
+                    'embedding',
+                    {self.config["knowledge_base"]["embedding"]["dimension"]},
                     'cosine'
                 )
             """)
+
+    def sync_knowledge_base(self) -> None:
+        """Synchronize knowledge base with notes."""
+        start_time = time.time()
+        self.logger.info("Starting knowledge base synchronization...")
+
+        # Initialize if needed
+        with self.driver.session() as session:
+            # Check if constraints exist
+            result = session.run("""
+                SHOW CONSTRAINTS
+                YIELD name
+                RETURN count(*) as count
+            """)
+            is_initialized = result.single()["count"] > 0
+
+            if not is_initialized:
+                self.logger.info("First-time initialization - setting up database...")
+                self._setup_database()
+
+        # Count total files
+        total_files = 0
+        all_files = []
+        sources_config = self.config["sources"]
+        for _source_type, source_info in sources_config.items():
+            source_path = Path(source_info["path"])
+            files = list(source_path.glob(source_info["pattern"]))
+            total_files += len(files)
+            all_files.extend(files)
+
+        self.logger.info(f"Found {total_files} files to process")
+
+        try:
+            # Keep existing progress bar and parallel processing logic
+            with tqdm(total=total_files, desc="Synchronizing Knowledge Base", unit="file") as pbar:
+                with ThreadPoolExecutor(
+                    max_workers=self.config["knowledge_base"]["processing"]["parallel_files"]
+                ) as executor:
+                    futures = []
+
+                    for file_path in all_files:
+                        with self.driver.session() as session:
+                            # Check if file exists and get last modified time
+                            query = """
+                            MATCH (b:Block)
+                            WHERE b.source_file = $file_path
+                            RETURN max(b.last_modified) as last_modified
+                            """
+                            result = session.run(query, {"file_path": str(file_path)})
+                            db_last_modified = result.single()["last_modified"]
+                            current_modified = file_path.stat().st_mtime
+
+                            # Process file if it's new or modified
+                            if not db_last_modified or float(db_last_modified) < current_modified:
+                                if db_last_modified:
+                                    session.run(
+                                        """
+                                        MATCH (b:Block)
+                                        WHERE b.source_file = $file_path
+                                        DETACH DELETE b
+                                        """,
+                                        {"file_path": str(file_path)},
+                                    )
+                                futures.append(executor.submit(self.process_file, file_path))
+                            pbar.update(1)
+
+                    self.logger.info("Processing futures...")
+                    # Wait for all processing to complete
+                    for future in futures:
+                        future.result()
+                    self.logger.info("All futures completed")
+
+            total_time = time.time() - start_time
+            self.logger.info(
+                f"Knowledge base synchronization completed in {total_time/60:.1f} minutes. "
+                f"Processed {total_files} files at {total_files/total_time:.1f} files/second"
+            )
+        except Exception as e:
+            self.logger.exception(f"Synchronization failed: {str(e)}")
+            raise
 
     def extract_metadata(self, content: str) -> list[str]:
         """Extract hashtags and wiki-links from content."""
@@ -74,22 +159,34 @@ class KnowledgeBaseProcessor:
     def parse_blocks(self, content: str) -> list[Block]:
         """Parse content into blocks with metadata."""
         blocks = []
-        current_block = None
+        texts_to_embed = []
 
+        # First pass: create blocks without embeddings
         for line in content.splitlines():
             if line.strip().startswith("- "):
-                if current_block:
-                    blocks.append(current_block)
-
                 level = (len(line) - len(line.lstrip())) // 4
                 content = line.strip("- ").strip()
                 tags = self.extract_metadata(content)
-                embedding = self.model.encode(content).tolist()
+                blocks.append(Block(content=content, level=level, tags=tags, embedding=None))
+                texts_to_embed.append(content)
 
-                current_block = Block(content=content, level=level, tags=tags, embedding=embedding)
+        # Batch process embeddings using multiprocessing
+        batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
 
-        if current_block:
-            blocks.append(current_block)
+        # Create progress bar for embedding batches
+        batches = [texts_to_embed[i : i + batch_size] for i in range(0, len(texts_to_embed), batch_size)]
+        with tqdm(total=len(batches), desc="Generating Embeddings", unit="batch") as embed_pbar:
+            with multiprocessing.Pool(processes=self.config["system"]["cpu_threads"]) as pool:
+                # Process batches in parallel with progress updates
+                embeddings_list = []
+                for result in pool.imap(self.model.encode, batches):
+                    embeddings_list.append(result)
+                    embed_pbar.update(1)
+
+                # Flatten results and assign back to blocks
+                all_embeddings = [emb for batch in embeddings_list for emb in batch]
+                for block, embedding in zip(blocks, all_embeddings, strict=False):
+                    block.embedding = embedding.tolist()
 
         return blocks
 
@@ -135,117 +232,55 @@ class KnowledgeBaseProcessor:
         """
         session.run(query, {"threshold": self.similarity_threshold})
 
-    def process_file(self, file_path: Path, batch_size: int = 100) -> None:
+    def process_file(self, file_path: Path) -> None:
         """Process a single file into the knowledge base."""
         try:
             content = file_path.read_text(encoding="utf-8")
             blocks = self.parse_blocks(content)
 
+            batch_size = self.config["knowledge_base"]["processing"]["batch_size"]
+
             with self.driver.session() as session:
-                # Process blocks in batches
+                # Use unwind for batch operations
                 for i in range(0, len(blocks), batch_size):
                     batch = blocks[i : i + batch_size]
-                    for block in batch:
-                        # Pass the file_path here
-                        self.create_block_node(session, block, str(file_path))
-                    self.logger.info(f"Processed batch of {len(batch)} blocks from {file_path.name}")
 
-                # Create semantic relationships after all blocks are created
-                self.create_semantic_relationships(session)
+                    # Batch create blocks
+                    session.run(
+                        """
+                        UNWIND $blocks as block
+                        MERGE (b:Block {content: block.content})
+                        SET b.embedding = block.embedding,
+                            b.level = block.level,
+                            b.source_file = $source_file,
+                            b.last_modified = $last_modified
+                    """,
+                        {
+                            "blocks": [
+                                {"content": b.content, "embedding": b.embedding, "level": b.level} for b in batch
+                            ],
+                            "source_file": str(file_path),
+                            "last_modified": file_path.stat().st_mtime,
+                        },
+                    )
+
+                    # Batch create tags
+                    tags_data = []
+                    for block in batch:
+                        for tag in block.tags:
+                            tags_data.append({"content": block.content, "tag": tag})
+
+                    if tags_data:
+                        session.run(
+                            """
+                            UNWIND $tags_data as data
+                            MERGE (t:Tag {name: data.tag})
+                            WITH t, data
+                            MATCH (b:Block {content: data.content})
+                            MERGE (b)-[:TAGGED]->(t)
+                        """,
+                            {"tags_data": tags_data},
+                        )
 
         except Exception as e:
             self.logger.exception(f"Error processing {file_path}: {e!s}")
-
-    def initialize_knowledge_base(self) -> None:
-        """Initialize the knowledge base with all notes."""
-        self.logger.info("Starting knowledge base initialization...")
-
-        # First count total files to process
-        total_files = 0
-        for source in self.config["knowledge_base"]["sources"]:
-            source_path = Path(source["path"])
-            total_files += len(list(source_path.glob(source["file_pattern"])))
-
-        with tqdm(total=total_files, desc="Building Knowledge Base", unit="file") as pbar:
-            for source in self.config["knowledge_base"]["sources"]:
-                source_path = Path(source["path"])
-
-                files = list(source_path.glob(source["file_pattern"]))
-                for file_path in files:
-                    self.process_file(file_path)
-                    pbar.set_postfix_str(f"Current file: {file_path.name}")
-                    pbar.update(1)
-
-        self.logger.info("Knowledge base initialization completed")
-
-    def query_similar_content(self, content: str, limit: int = 5) -> list[dict]:
-        """Find similar content using vector similarity."""
-        embedding = self.model.encode(content).tolist()
-
-        with self.driver.session() as session:
-            result = session.run(
-                """
-                CALL db.index.vector.queryNodes($index_name, $limit, $embedding)
-                YIELD node, score
-                RETURN node.content as content, score
-                """,
-                {
-                    "index_name": self.config["knowledge_base"]["indexes"][0]["name"],
-                    "limit": limit,
-                    "embedding": embedding,
-                },
-            )
-            return [{"content": record["content"], "score": record["score"]} for record in result]
-
-    def is_file_processed(self, session: Session, file_path: Path) -> bool:
-        """Check if file has already been processed."""
-        query = """
-        MATCH (b:Block)
-        WHERE b.source_file = $file_path
-        RETURN count(b) > 0 as exists
-        """
-        result = session.run(query, {"file_path": str(file_path)})
-        return result.single()["exists"]
-
-    def update_knowledge_base(self) -> None:
-        """Update existing knowledge base with new or modified notes."""
-        self.logger.info("Starting knowledge base update...")
-
-        with self.driver.session() as session:
-            for source in self.config["knowledge_base"]["sources"]:
-                source_path = Path(source["path"])
-                self.logger.info(f"Processing source: {source_path}")
-
-                for file_path in source_path.glob(source["file_pattern"]):
-                    # Check if file exists in DB and get its last modified time
-                    query = """
-                    MATCH (b:Block)
-                    WHERE b.source_file = $file_path
-                    RETURN max(b.last_modified) as last_modified
-                    """
-                    result = session.run(query, {"file_path": str(file_path)})
-                    db_last_modified = result.single()["last_modified"]
-
-                    # Get file's current modification time
-                    current_modified = file_path.stat().st_mtime
-
-                    # Process file if it's new or modified
-                    if not db_last_modified or float(db_last_modified) < current_modified:
-                        self.logger.info(f"Processing modified/new file: {file_path.name}")
-
-                        # Delete existing nodes for this file if any
-                        session.run(
-                            """
-                            MATCH (b:Block)
-                            WHERE b.source_file = $file_path
-                            DETACH DELETE b
-                            """,
-                            {"file_path": str(file_path)},
-                        )
-
-                        # Process the file
-                        self.process_file(file_path)
-                    else:
-                        self.logger.debug(f"Skipping unmodified file: {file_path.name}")
-
-        self.logger.info("Knowledge base update completed")
