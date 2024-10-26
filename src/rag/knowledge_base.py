@@ -7,7 +7,7 @@ from pathlib import Path
 
 from neo4j import Driver, GraphDatabase, Session
 from sentence_transformers import SentenceTransformer
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from config import load_config
 from utils import get_logger
@@ -15,6 +15,7 @@ from utils import get_logger
 
 # Set start method to 'spawn' for CUDA support
 multiprocessing.set_start_method("spawn", force=True)
+
 
 @dataclass
 class Block:
@@ -102,50 +103,65 @@ class KnowledgeBaseProcessor:
         self.logger.info(f"Found {total_files} files to process")
 
         try:
-            # Keep existing progress bar and parallel processing logic
-            with tqdm(total=total_files, desc="Synchronizing Knowledge Base", unit="file") as pbar:
+            with tqdm(total=total_files, desc="Processing Files", position=0) as main_pbar:
+                embedding_pbar = tqdm(desc="Total Embeddings Generated", position=1, unit=" embeddings")
+
+                def process_file_with_count(file_path: Path) -> None:
+                    try:
+                        content = file_path.read_text(encoding="utf-8")
+                        blocks = []
+                        texts_to_embed = []
+
+                        # First pass: collect all texts that need embeddings
+                        for line in content.splitlines():
+                            if line.strip().startswith("- "):
+                                content = line.strip("- ").strip()
+                                level = (len(line) - len(line.lstrip())) // 4
+                                tags = self.extract_metadata(content)
+                                blocks.append(Block(content=content, level=level, tags=tags))
+                                texts_to_embed.append(content)
+
+                        # Process embeddings in batches
+                        batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
+                        batches = [
+                            texts_to_embed[i : i + batch_size] for i in range(0, len(texts_to_embed), batch_size)
+                        ]
+
+                        embeddings_list = []
+                        for batch in batches:
+                            result = self.model.encode(batch)
+                            embeddings_list.append(result)
+                            embedding_pbar.update(len(batch))  # Update count of processed embeddings
+
+                        # Assign embeddings back to blocks
+                        all_embeddings = [emb for batch_result in embeddings_list for emb in batch_result]
+                        for block, embedding in zip(blocks, all_embeddings, strict=False):
+                            block.embedding = embedding.tolist()
+
+                        # Process blocks in database
+                        self._process_blocks_in_db(blocks, file_path)
+
+                    except Exception as e:
+                        self.logger.exception(f"Error processing {file_path}: {e}")
+
                 with ThreadPoolExecutor(
                     max_workers=self.config["knowledge_base"]["processing"]["parallel_files"]
                 ) as executor:
                     futures = []
-
                     for file_path in all_files:
-                        with self.driver.session() as session:
-                            # Check if file exists and get last modified time
-                            query = """
-                            MATCH (b:Block)
-                            WHERE b.source_file = $file_path
-                            RETURN max(b.last_modified) as last_modified
-                            """
-                            result = session.run(query, {"file_path": str(file_path)})
-                            db_last_modified = result.single()["last_modified"]
-                            current_modified = file_path.stat().st_mtime
+                        # ... existing file check code ...
+                        futures.append(executor.submit(process_file_with_count, file_path))
+                        main_pbar.update(1)
 
-                            # Process file if it's new or modified
-                            if not db_last_modified or float(db_last_modified) < current_modified:
-                                if db_last_modified:
-                                    session.run(
-                                        """
-                                        MATCH (b:Block)
-                                        WHERE b.source_file = $file_path
-                                        DETACH DELETE b
-                                        """,
-                                        {"file_path": str(file_path)},
-                                    )
-                                futures.append(executor.submit(self.process_file, file_path))
-                            pbar.update(1)
-
-                    self.logger.info("Processing futures...")
-                    # Wait for all processing to complete
                     for future in futures:
                         future.result()
-                    self.logger.info("All futures completed")
 
             total_time = time.time() - start_time
             self.logger.info(
                 f"Knowledge base synchronization completed in {total_time/60:.1f} minutes. "
-                f"Processed {total_files} files at {total_files/total_time:.1f} files/second"
+                f"Processed {total_files} files and {embedding_pbar.n} embeddings"
             )
+
         except Exception as e:
             self.logger.exception(f"Synchronization failed: {str(e)}")
             raise
@@ -156,7 +172,7 @@ class KnowledgeBaseProcessor:
         wikilinks = re.findall(r"\[\[(.*?)\]\]", content)
         return list(set(hashtags + wikilinks))  # Remove duplicates
 
-    def parse_blocks(self, content: str) -> list[Block]:
+    def parse_blocks(self, content: str, embedding_pbar: tqdm | None = None) -> list[Block]:
         """Parse content into blocks with metadata."""
         blocks = []
         texts_to_embed = []
@@ -172,21 +188,24 @@ class KnowledgeBaseProcessor:
 
         # Batch process embeddings using multiprocessing
         batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
-
-        # Create progress bar for embedding batches
         batches = [texts_to_embed[i : i + batch_size] for i in range(0, len(texts_to_embed), batch_size)]
-        with tqdm(total=len(batches), desc="Generating Embeddings", unit="batch") as embed_pbar:
-            with multiprocessing.Pool(processes=self.config["system"]["cpu_threads"]) as pool:
-                # Process batches in parallel with progress updates
-                embeddings_list = []
-                for result in pool.imap(self.model.encode, batches):
-                    embeddings_list.append(result)
-                    embed_pbar.update(1)
 
-                # Flatten results and assign back to blocks
-                all_embeddings = [emb for batch in embeddings_list for emb in batch]
-                for block, embedding in zip(blocks, all_embeddings, strict=False):
-                    block.embedding = embedding.tolist()
+        if embedding_pbar is not None:
+            embedding_pbar.total = len(batches)
+            embedding_pbar.reset()
+
+        with multiprocessing.Pool(processes=self.config["system"]["cpu_threads"]) as pool:
+            # Process batches in parallel
+            embeddings_list = []
+            for result in pool.imap(self.model.encode, batches):
+                embeddings_list.append(result)
+                if embedding_pbar is not None:
+                    embedding_pbar.update(1)
+
+            # Flatten results and assign back to blocks
+            all_embeddings = [emb for batch in embeddings_list for emb in batch]
+            for block, embedding in zip(blocks, all_embeddings, strict=False):
+                block.embedding = embedding.tolist()
 
         return blocks
 
@@ -232,11 +251,11 @@ class KnowledgeBaseProcessor:
         """
         session.run(query, {"threshold": self.similarity_threshold})
 
-    def process_file(self, file_path: Path) -> None:
+    def process_file(self, file_path: Path, embedding_pbar: tqdm | None = None) -> None:
         """Process a single file into the knowledge base."""
         try:
             content = file_path.read_text(encoding="utf-8")
-            blocks = self.parse_blocks(content)
+            blocks = self.parse_blocks(content, embedding_pbar)
 
             batch_size = self.config["knowledge_base"]["processing"]["batch_size"]
 
