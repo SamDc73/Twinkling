@@ -1,3 +1,4 @@
+import gc
 import multiprocessing
 import re
 import time
@@ -153,26 +154,35 @@ class KnowledgeBaseProcessor:
                 blocks.append(Block(content=content, level=level, tags=tags, embedding=None))
                 texts_to_embed.append(content)
 
-        # Batch process embeddings using multiprocessing
-        batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
-        batches = [texts_to_embed[i : i + batch_size] for i in range(0, len(texts_to_embed), batch_size)]
+        # Process in smaller chunks to prevent memory bloat
+        chunk_size = 1000  # Adjust based on your typical file sizes
+        embeddings_list = []
 
-        if embedding_pbar is not None:
-            embedding_pbar.total = len(batches)
-            embedding_pbar.reset()
+        for i in range(0, len(texts_to_embed), chunk_size):
+            chunk = texts_to_embed[i : i + chunk_size]
 
-        with multiprocessing.Pool(processes=self.config["system"]["cpu_threads"]) as pool:
-            # Process batches in parallel
-            embeddings_list = []
-            for result in pool.imap(self.model.encode, batches):
-                embeddings_list.append(result)
-                if embedding_pbar is not None:
-                    embedding_pbar.update(1)
+            # Process this chunk's batches
+            batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
+            batches = [chunk[j : j + batch_size] for j in range(0, len(chunk), batch_size)]
 
-            # Flatten results and assign back to blocks
-            all_embeddings = [emb for batch in embeddings_list for emb in batch]
-            for block, embedding in zip(blocks, all_embeddings, strict=False):
-                block.embedding = embedding.tolist()
+            if embedding_pbar is not None:
+                embedding_pbar.total = len(batches)
+                embedding_pbar.reset()
+
+            with multiprocessing.Pool(processes=self.config["system"]["cpu_threads"]) as pool:
+                for result in pool.imap(self.model.encode, batches):
+                    embeddings_list.extend(result)
+                    if embedding_pbar is not None:
+                        embedding_pbar.update(1)
+
+            # Clear memory after each chunk
+            gc.collect()
+            pool.close()
+            pool.join()
+
+        # Assign embeddings back to blocks
+        for block, embedding in zip(blocks, embeddings_list, strict=False):
+            block.embedding = embedding.tolist()
 
         return blocks
 
