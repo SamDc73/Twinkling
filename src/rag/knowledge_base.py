@@ -71,100 +71,67 @@ class KnowledgeBaseProcessor:
                 )
             """)
 
+    def _get_file_signature(self, file_path: Path) -> tuple[float, int]:
+        """Get file modification time and size."""
+        stat = file_path.stat()
+        return (stat.st_mtime, stat.st_size)
+
+    def _get_processed_files(self, session: Session) -> dict[str, tuple[float, int]]:
+        """Get all previously processed files and their signatures from DB."""
+        result = session.run("""
+            MATCH (b:Block)
+            WITH b.source_file as file, max(b.last_modified) as mtime, count(*) as size
+            RETURN file, mtime, size
+        """)
+        return {r["file"]: (r["mtime"], r["size"]) for r in result if r["file"]}
+
     def sync_knowledge_base(self) -> None:
-        """Synchronize knowledge base with notes."""
-        start_time = time.time()
         self.logger.info("Starting knowledge base synchronization...")
 
-        # Initialize if needed
-        with self.driver.session() as session:
-            # Check if constraints exist
-            result = session.run("""
-                SHOW CONSTRAINTS
-                YIELD name
-                RETURN count(*) as count
-            """)
-            is_initialized = result.single()["count"] > 0
-
-            if not is_initialized:
-                self.logger.info("First-time initialization - setting up database...")
-                self._setup_database()
-
-        # Count total files
-        total_files = 0
+        # Collect all files
         all_files = []
-        sources_config = self.config["sources"]
-        for _source_type, source_info in sources_config.items():
+        for source_type, source_info in self.config["sources"].items():
             source_path = Path(source_info["path"])
             files = list(source_path.glob(source_info["pattern"]))
-            total_files += len(files)
             all_files.extend(files)
 
-        self.logger.info(f"Found {total_files} files to process")
+        with self.driver.session() as session:
+            # Get previously processed files
+            processed_files = self._get_processed_files(session)
 
-        try:
-            with tqdm(total=total_files, desc="Processing Files", position=0) as main_pbar:
-                embedding_pbar = tqdm(desc="Total Embeddings Generated", position=1, unit=" embeddings")
+            # Determine which files need processing
+            files_to_process = []
+            for file_path in all_files:
+                file_str = str(file_path)
+                current_signature = self._get_file_signature(file_path)
 
-                def process_file_with_count(file_path: Path) -> None:
-                    try:
-                        content = file_path.read_text(encoding="utf-8")
-                        blocks = []
-                        texts_to_embed = []
+                if file_str not in processed_files or processed_files[file_str] != current_signature:
+                    files_to_process.append(file_path)
 
-                        # First pass: collect all texts that need embeddings
-                        for line in content.splitlines():
-                            if line.strip().startswith("- "):
-                                content = line.strip("- ").strip()
-                                level = (len(line) - len(line.lstrip())) // 4
-                                tags = self.extract_metadata(content)
-                                blocks.append(Block(content=content, level=level, tags=tags))
-                                texts_to_embed.append(content)
+            if not files_to_process:
+                self.logger.info("No files have changed since last sync. Nothing to do.")
+                return
 
-                        # Process embeddings in batches
-                        batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
-                        batches = [
-                            texts_to_embed[i : i + batch_size] for i in range(0, len(texts_to_embed), batch_size)
-                        ]
-
-                        embeddings_list = []
-                        for batch in batches:
-                            result = self.model.encode(batch)
-                            embeddings_list.append(result)
-                            embedding_pbar.update(len(batch))  # Update count of processed embeddings
-
-                        # Assign embeddings back to blocks
-                        all_embeddings = [emb for batch_result in embeddings_list for emb in batch_result]
-                        for block, embedding in zip(blocks, all_embeddings, strict=False):
-                            block.embedding = embedding.tolist()
-
-                        # Process blocks in database
-                        self._process_blocks_in_db(blocks, file_path)
-
-                    except Exception as e:
-                        self.logger.exception(f"Error processing {file_path}: {e}")
-
-                with ThreadPoolExecutor(
-                    max_workers=self.config["knowledge_base"]["processing"]["parallel_files"]
-                ) as executor:
-                    futures = []
-                    for file_path in all_files:
-                        # ... existing file check code ...
-                        futures.append(executor.submit(process_file_with_count, file_path))
-                        main_pbar.update(1)
-
-                    for future in futures:
-                        future.result()
-
-            total_time = time.time() - start_time
             self.logger.info(
-                f"Knowledge base synchronization completed in {total_time/60:.1f} minutes. "
-                f"Processed {total_files} files and {embedding_pbar.n} embeddings"
+                f"Found {len(files_to_process)} files that need processing " f"out of {len(all_files)} total files"
             )
 
-        except Exception as e:
-            self.logger.exception(f"Synchronization failed: {str(e)}")
-            raise
+            # Process only changed files
+            with tqdm(total=len(files_to_process), desc="Processing Files") as pbar:
+                for file_path in files_to_process:
+                    # Before processing new version, delete old blocks
+                    session.run(
+                        """
+                        MATCH (b:Block)
+                        WHERE b.source_file = $file
+                        DETACH DELETE b
+                    """,
+                        {"file": str(file_path)},
+                    )
+
+                    # Process the file
+                    self.process_file(file_path)
+                    pbar.update(1)
 
     def extract_metadata(self, content: str) -> list[str]:
         """Extract hashtags and wiki-links from content."""
@@ -251,55 +218,33 @@ class KnowledgeBaseProcessor:
         """
         session.run(query, {"threshold": self.similarity_threshold})
 
-    def process_file(self, file_path: Path, embedding_pbar: tqdm | None = None) -> None:
-        """Process a single file into the knowledge base."""
+    def process_file(self, file_path: Path) -> None:
         try:
             content = file_path.read_text(encoding="utf-8")
-            blocks = self.parse_blocks(content, embedding_pbar)
+            blocks = self.parse_blocks(content)
 
-            batch_size = self.config["knowledge_base"]["processing"]["batch_size"]
+            # Get file signature
+            file_signature = self._get_file_signature(file_path)
 
             with self.driver.session() as session:
-                # Use unwind for batch operations
-                for i in range(0, len(blocks), batch_size):
-                    batch = blocks[i : i + batch_size]
-
-                    # Batch create blocks
-                    session.run(
-                        """
-                        UNWIND $blocks as block
-                        MERGE (b:Block {content: block.content})
-                        SET b.embedding = block.embedding,
-                            b.level = block.level,
-                            b.source_file = $source_file,
-                            b.last_modified = $last_modified
-                    """,
-                        {
-                            "blocks": [
-                                {"content": b.content, "embedding": b.embedding, "level": b.level} for b in batch
-                            ],
-                            "source_file": str(file_path),
-                            "last_modified": file_path.stat().st_mtime,
-                        },
-                    )
-
-                    # Batch create tags
-                    tags_data = []
-                    for block in batch:
-                        for tag in block.tags:
-                            tags_data.append({"content": block.content, "tag": tag})
-
-                    if tags_data:
-                        session.run(
-                            """
-                            UNWIND $tags_data as data
-                            MERGE (t:Tag {name: data.tag})
-                            WITH t, data
-                            MATCH (b:Block {content: data.content})
-                            MERGE (b)-[:TAGGED]->(t)
-                        """,
-                            {"tags_data": tags_data},
-                        )
+                # Store blocks with file metadata
+                session.run(
+                    """
+                    UNWIND $blocks as block
+                    MERGE (b:Block {content: block.content})
+                    SET b.embedding = block.embedding,
+                        b.level = block.level,
+                        b.source_file = $source_file,
+                        b.last_modified = $last_modified,
+                        b.file_size = $file_size
+                """,
+                    {
+                        "blocks": [{"content": b.content, "embedding": b.embedding, "level": b.level} for b in blocks],
+                        "source_file": str(file_path),
+                        "last_modified": file_signature[0],  # mtime
+                        "file_size": file_signature[1],  # size
+                    },
+                )
 
         except Exception as e:
-            self.logger.exception(f"Error processing {file_path}: {e!s}")
+            self.logger.exception(f"Error processing {file_path}: {e}")
