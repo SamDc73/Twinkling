@@ -15,7 +15,8 @@ from utils import get_logger
 
 
 # Set start method to 'spawn' for CUDA support
-multiprocessing.set_start_method("spawn", force=True)
+if load_config()["knowledge_base"]["embedding"]["device"] == "cuda":
+    multiprocessing.set_start_method("spawn", force=True)
 
 
 @dataclass
@@ -31,16 +32,16 @@ class KnowledgeBaseProcessor:
         self.config = load_config()
         self.logger = get_logger(__name__)
 
-        # Initialize embedding model
-        model_name = self.config["knowledge_base"]["embedding"]["model"]
-        self.model = SentenceTransformer(model_name)
-        self.similarity_threshold = self.config["knowledge_base"]["embedding"]["similarity_threshold"]
+        # Initialize embedding model with config
+        embedding_config = self.config["knowledge_base"]["embedding"]
+        self.model = SentenceTransformer(embedding_config["model"], device=embedding_config["device"])
+        self.similarity_threshold = embedding_config["similarity_threshold"]
 
         # Initialize Neo4j connection
-        neo4j_config = self.config["knowledge_base"]["database"]
+        db_config = self.config["knowledge_base"]["database"]
         self.driver: Driver = GraphDatabase.driver(
-            neo4j_config["uri"],
-            auth=(neo4j_config["user"], neo4j_config["password"]),
+            db_config["uri"],
+            auth=(db_config["user"], db_config["password"]),
         )
 
     def __del__(self) -> None:
@@ -49,26 +50,25 @@ class KnowledgeBaseProcessor:
             self.driver.close()
 
     def _setup_database(self) -> None:
+        db_config = self.config["knowledge_base"]["database"]
+
         with self.driver.session() as session:
-            # Create constraints
-            session.run("""
-                CREATE CONSTRAINT block_content IF NOT EXISTS
-                FOR (b:Block) REQUIRE b.content IS UNIQUE
-            """)
+            # Create configurable constraints
+            for constraint in db_config["constraints"]:
+                session.run(f"""
+                    CREATE CONSTRAINT {constraint['name']} IF NOT EXISTS
+                    FOR (b:{constraint['node']}) REQUIRE b.{constraint['property']} IS UNIQUE
+                """)
 
-            session.run("""
-                CREATE CONSTRAINT tag_name IF NOT EXISTS
-                FOR (t:Tag) REQUIRE t.name IS UNIQUE
-            """)
-
-            # Create vector index with hardcoded values
+            # Create vector index from config
+            vector_idx = db_config["vector_index"]
             session.run(f"""
                 CALL db.index.vector.createNodeIndex(
-                    'block_embedding',
-                    'Block',
-                    'embedding',
-                    {self.config["knowledge_base"]["embedding"]["dimension"]},
-                    'cosine'
+                    '{vector_idx['name']}',
+                    '{vector_idx['node']}',
+                    '{vector_idx['property']}',
+                    {self.config['knowledge_base']['embedding']['dimension']},
+                    '{vector_idx['algorithm']}'
                 )
             """)
 
@@ -141,7 +141,6 @@ class KnowledgeBaseProcessor:
         return list(set(hashtags + wikilinks))  # Remove duplicates
 
     def parse_blocks(self, content: str, embedding_pbar: tqdm | None = None) -> list[Block]:
-        """Parse content into blocks with metadata."""
         blocks = []
         texts_to_embed = []
 
@@ -154,15 +153,13 @@ class KnowledgeBaseProcessor:
                 blocks.append(Block(content=content, level=level, tags=tags, embedding=None))
                 texts_to_embed.append(content)
 
-        # Process in smaller chunks to prevent memory bloat
-        chunk_size = 1000  # Adjust based on your typical file sizes
-        embeddings_list = []
+        # Get chunk and batch sizes from config
+        chunk_size = self.config["knowledge_base"]["embedding"]["chunk_size"]
+        batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
 
+        embeddings_list = []
         for i in range(0, len(texts_to_embed), chunk_size):
             chunk = texts_to_embed[i : i + chunk_size]
-
-            # Process this chunk's batches
-            batch_size = self.config["knowledge_base"]["processing"]["embedding_batch_size"]
             batches = [chunk[j : j + batch_size] for j in range(0, len(chunk), batch_size)]
 
             if embedding_pbar is not None:
@@ -174,13 +171,10 @@ class KnowledgeBaseProcessor:
                     embeddings_list.extend(result)
                     if embedding_pbar is not None:
                         embedding_pbar.update(1)
+                gc.collect()
+                pool.close()
+                pool.join()
 
-            # Clear memory after each chunk
-            gc.collect()
-            pool.close()
-            pool.join()
-
-        # Assign embeddings back to blocks
         for block, embedding in zip(blocks, embeddings_list, strict=False):
             block.embedding = embedding.tolist()
 

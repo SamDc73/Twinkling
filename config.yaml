@@ -1,44 +1,107 @@
-notes_directory: "/home/samdc/Notes/logseq/pages"
+app:
+  name: "Twinkling"
+  version: "0.1"
 
-topics:
-  - "Programming"
-  - "Electrical Engineering"
-  - "Python"
-  - "Hackathons"
-  - "Machine Learning"
-  - "Artificial Intelligence"
-  - "Books"
+sources:
+  journals:
+    path: "/home/samdc/Notes/logseq/journals"
+    pattern: "*.md"
+  pages:
+    path: "/home/samdc/Notes/logseq/pages"
+    pattern: "*.md"
 
-topics_to_avoid:
-  - "Politics"
-  - "Religion"
-  - "investing"
-  - "cryptocurrency"
-  - "blockchain"
-  - "NFTs"
-  - "Gaming"
-  - "Sports"
-  - "Celebrity Gossip"
-  - "Fashion"
-  - "Music"
-  - "Movies"
-  - "TV Shows"
-  - "Health"
+content:
+  topics:
+    include:
+      - "Programming"
+      - "Electrical Engineering"
+      - "Python"
+      - "Hackathons"
+      - "Machine Learning"
+      - "Artificial Intelligence"
+      - "Books"
+    avoid:
+      - "Politics"
+      - "Religion"
+      - "investing"
+      - "cryptocurrency"
+      - "blockchain"
+      - "NFTs"
+      - "Gaming"
+      - "Sports"
+      - "Celebrity Gossip"
+      - "Fashion"
+      - "Music"
+      - "Movies"
+      - "TV Shows"
+      - "Health"
 
-api:
+platforms:
   twitter:
     tweet_length: 280
     bio: "Building cool stuff, breaking a few things along the way. Not quite the guru, but close enough"
     location: "San Francisco Bay Area"
 
-ai:
-  model:
-    name: "Meta-Llama-3.1-405B-Instruct"
+LLM:
+  model: "Meta-Llama-3.1-405B-Instruct"
+  generation:
     temperature: 0.2
     top_p: 0.9
     seed: 123
-    stop:
-      - "\n\n"
+    stop: ["\n\n"]
+
 
 prompts:
-  tweet_generation: "Based on the following note, generate a tweet in my style. Use simple, plain English. Be direct and clear. Avoid hype words or jargon. Keep it short and casual, like you're talking to a friend. Focus on these topics: {topics}. Avoid these topics: {topics_to_avoid}.\n\nNote: {note_content}\n\nTweet:"
+  tweet: >
+    Based on the following note, generate a tweet in my style.
+    Use simple, plain English. Be direct and clear.
+    Avoid hype words or jargon. Keep it short and casual,
+    like you're talking to a friend and stick to the overall style of my notes.
+    Focus on these topics: {topics}.
+    Avoid these topics: {topics_to_avoid}.
+
+    Note: {note_content}
+
+    Tweet:
+
+
+knowledge_base:
+
+  embedding:
+    model: "BAAI/bge-small-en-v1.5"  # Good balance of speed and quality
+    dimension: 384
+    similarity_threshold: 0.85
+    device: "cpu"
+    chunk_size: 1000
+
+  database:
+    type: "neo4j"
+    uri: "neo4j://localhost:7687"
+    user: "neo4j"
+    password: "password123"
+    name: "logseq-notes"
+
+  processing:
+    parallel_files: 4
+    batch_size: 500
+    embedding_batch_size: 32
+    memory_limit: 0.75
+    max_retries: 3
+    skip_errors: true
+    show_progress: true
+    log_level: "info"
+
+  constraints:
+    - name: "block_content"
+      node: "Block"
+      property: "content"
+    - name: "tag_name"
+      node: "Tag"
+      property: "name"
+
+  vector_index:
+    name: "block_embedding"
+    node: "Block"
+    property: "embedding"
+    algorithm: "cosine"
+
